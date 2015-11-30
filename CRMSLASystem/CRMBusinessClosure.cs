@@ -7,6 +7,7 @@ using System.Linq;
 
 namespace CRMSLASystem
 {
+    // CRM Business Closure
     public class CRMBusinessClosure
     {
         private IOrganizationService _service;
