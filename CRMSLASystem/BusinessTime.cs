@@ -9,27 +9,43 @@ namespace CRMSLASystem
     /// <summary>
     /// CRM Business Closure SLA System.
     /// Authors: Richard Anderson and David Clark.
-    /// Version: 1.0.0.0
-    /// Changelog:
+    /// Version: 1.0.0.1
     /// </summary>
     public class BusinessTime
     {
         private int _days;
         private int _hours;
         private int _minutes;
+
+        private double _businessStart;
+        private double _businessEnd;
+
         private DateTime _startDate;
         private IOrganizationService _service;
         private IWorkflowContext _context;
 
         private WorkingDay[] _workingDays;
 
-        public BusinessTime(DateTime startDate, IOrganizationService service, IWorkflowContext context)
+        public BusinessTime(DateTime startDate, IOrganizationService service, IWorkflowContext context,
+            double businessStart, double businessEnd)
         {
             _startDate = startDate;
             _service = service;
             _context = context;
+            _businessStart = businessStart;
+            _businessEnd = businessEnd;
         }
 
+        /// <summary>
+        /// Add valid working days, hours and/or minutes to a DateTime.
+        /// Valid working days exclude weekends, time outside of defined working hours 
+        /// and CRM Business Closures.
+        /// </summary>
+        /// <param name="days">Days to add.</param>
+        /// <param name="hours">Hours to add.</param>
+        /// <param name="minutes">Minutes to add.</param>
+        /// <returns>Returns a DateTime with a specific number of valid workingdays, 
+        /// hours and/or minutes added.</returns>
         public DateTime AddBusinessTime(int days, int hours, int minutes)
         {
             // 1 = calculate working time - weekends
@@ -39,9 +55,8 @@ namespace CRMSLASystem
             _minutes = minutes;
             _hours = hours;
             _days = days;
-
-            // Will be added in by CRM workflow typically.
-            _workingDays = WorkingDay.StaticWorkingDays(9.0, 17.0);
+            
+            _workingDays = WorkingDay.StaticWorkingDays(_businessStart, _businessEnd);
 
             WorkingDay currentDay = GetStartDate(_startDate);
             DateTime processTime = _startDate;
@@ -137,6 +152,8 @@ namespace CRMSLASystem
 
             int[] totalTime = new int[3] { 0, 0, 0 };
 
+            // Append potential worked time during a business closure to total time array to be added
+            // as valid working time.
             foreach (Entity businessClosure in businessClosures)
             {
                 int[] i = TimeWorkedInBusinessClosure(businessClosure, _startDate, processTime);
@@ -151,9 +168,15 @@ namespace CRMSLASystem
             _startDate = processTime;
 
             return AddBusinessTime(totalTime[0], totalTime[1], totalTime[2]);
-
         }
 
+        /// <summary>
+        /// Gets the next valid working date, accounting for CRM Business Closures,
+        ///  specified business working hours and weekends.
+        /// </summary>
+        /// <param name="dateTime">The DateTime to be added to.</param>
+        /// <param name="currentDay">The current working day.</param>
+        /// <returns>Returns an IDictionary containing a DateTime as a string and a WorkingDay object.</returns>
         public IDictionary<string, object> GetNextValidWorkingDate(DateTime dateTime, WorkingDay currentDay)
         {
             DateTime? startDate = null;
@@ -177,6 +200,11 @@ namespace CRMSLASystem
             return nextValidDate;
         }
 
+        /// <summary>
+        /// Gets the next working day, accounting for weekends.
+        /// </summary>
+        /// <param name="workingDay">The current WorkingDay to be evaluated.</param>
+        /// <returns>Returns the next valid working day as a WorkingDay.</returns>
         public WorkingDay GetNextDay(WorkingDay workingDay)
         {
             int currentDay = (int)workingDay.dayOfWeek;
@@ -189,6 +217,11 @@ namespace CRMSLASystem
             return (WorkingDay)nextWorkingDay;
         }
 
+        /// <summary>
+        /// Gets the start DateTime for a WorkingDay.
+        /// </summary>
+        /// <param name="dateTime">Current DateTime of a WorkingDay.</param>
+        /// <returns>Returns the start date of a WorkingDay as a WorkingDay.</returns>
         public WorkingDay GetStartDate(DateTime dateTime)
         {
             DayOfWeek dayOfWeek = dateTime.DayOfWeek;
