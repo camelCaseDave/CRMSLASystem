@@ -7,7 +7,6 @@ using System.Linq;
 
 namespace CRMSLASystem
 {
-    // CRM Business Closure
     public class CRMBusinessClosure
     {
         private IOrganizationService _service;
@@ -19,6 +18,10 @@ namespace CRMSLASystem
             _context = context;
         }
 
+        /// <summary>
+        /// Gets CRM Business Closures.
+        /// </summary>
+        /// <returns>Returns an IList of retrieved CRM Business Closure entity records.</returns>
         private IList<Entity> GetBusinessClosureCalendarRules()
         {
             // Retrieve Organisation Business Closure Calendar Id.
@@ -37,6 +40,12 @@ namespace CRMSLASystem
             return null;
         }
 
+        /// <summary>
+        /// Gets relevant CRM Business Closures specified within two DateTime boundaries.
+        /// </summary>
+        /// <param name="startDate">The start date from which a CRM Business Closure is considered valid.</param>
+        /// <param name="endDate">The end date before which a CRM Business Closure is considered valid.</param>
+        /// <returns>Returns an IList of CRM Business Closures valid within two DateTime boundaries..</returns>
         public IList<Entity> GetBusinessClosureCalendarRules(DateTime startDate, DateTime endDate)
         {
             IList<Entity> businessClosures = GetBusinessClosureCalendarRules();
@@ -60,6 +69,14 @@ namespace CRMSLASystem
             return validClosures;
         }
 
+        /// <summary>
+        /// Gets the time worked during a business day.
+        /// </summary>
+        /// <param name="businessOpen">The </param>
+        /// <param name="businessClose"></param>
+        /// <param name="closureStart"></param>
+        /// <param name="closureEnd"></param>
+        /// <returns></returns>
         public static int[] GetTimeWorked(DateTime businessOpen, DateTime businessClose, DateTime closureStart, DateTime closureEnd)
         {
             if (businessOpen > closureEnd || businessClose < closureStart)
@@ -73,8 +90,6 @@ namespace CRMSLASystem
             TimeSpan duration = currentEnd - currentTime;
 
             return new int[] { 0, duration.Hours, duration.Minutes };
-        }
-
-        
+        }   
     }
 }

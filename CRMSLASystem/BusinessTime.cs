@@ -234,6 +234,14 @@ namespace CRMSLASystem
 
         }
 
+        /// <summary>
+        /// Find out partial time worked during a CRM Business Closure.
+        /// </summary>
+        /// <param name="businessClosure">A CRM Business Closure.</param>
+        /// <param name="startTime">The start of the CRM Business Closure.</param>
+        /// <param name="endTime">The end of the CRM Business Closure.</param>
+        /// <returns>Returns the amount of time worked in a CRM Business Closure as an int[] 
+        /// where int[0] = days, int[1] = hours and int[2] = minutes.</returns>
         public int[] TimeWorkedInBusinessClosure(Entity businessClosure, DateTime startTime, DateTime endTime)
         {
             int[] timeWorked = new int[3];

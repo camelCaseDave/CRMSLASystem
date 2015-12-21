@@ -2,6 +2,7 @@
 
 namespace CRMSLASystem
 {
+    // CRM Working Day
     public class WorkingDay
     {
         private int _businessStartHour;
