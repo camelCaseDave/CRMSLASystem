@@ -2,7 +2,10 @@
 
 namespace CRMSLASystem
 {
-    // CRM Working Day
+    /// <summary>
+    /// A CRM Working Day i.e. is not a business closure and is not a weekend.
+    /// Accounts for valid working time as defined by working hours and minutes e.g. 09:30am to 18:00pm.
+    /// </summary>
     public class WorkingDay
     {
         private int _businessStartHour;
@@ -10,27 +13,20 @@ namespace CRMSLASystem
         private int _businessEndHour;
         private int _businessEndMinutes;
 
-        private DayOfWeek _dayOfWeek;
-        public DayOfWeek dayOfWeek
-        {
-            get
-            {
-                return _dayOfWeek;
-            }
-        }
-
         private bool _isWorking;
 
-        public DateTime GetStartDate(DateTime dateTime)
-        {
-            return dateTime.Date.AddHours(_businessStartHour).AddMinutes(_businessStartMinutes);
-        }
+        private DayOfWeek _dayOfWeek;
+        public DayOfWeek dayOfWeek { get { return _dayOfWeek; } }
 
-        public DateTime GetEndDate(DateTime dateTime)
-        {
-            return dateTime.Date.AddHours(_businessEndHour).AddMinutes(_businessEndMinutes);
-        }
-
+        /// <summary>
+        /// Abstraction of a CRM working day i.e. not a weekend and not a business closure.
+        /// </summary>
+        /// <param name="dayOfWeek">The day of the week as a DayOfWeek.</param>
+        /// <param name="businessStartHour">The time work commences for the WorkingDay as a double. 
+        /// e.g. 09.0d = 09:00am.</param>
+        /// <param name="businessEndHour">The time work finishes for the WorkingDay as a double.
+        /// e.g. 17.0d = 17:00pm.</param>
+        /// <param name="isWorking">Boolean defining if the day is a working day, true if it is, false if it is not.</param>
         public WorkingDay(DayOfWeek dayOfWeek, double businessStartHour, double businessEndHour, bool isWorking)
         {
             _businessStartHour = int.Parse(businessStartHour.ToString().Split('.')[0]);
@@ -44,6 +40,11 @@ namespace CRMSLASystem
             _isWorking = isWorking;
         }
 
+        /// <summary>
+        /// Gets the remaining minutes in an hour accounting for business closures.
+        /// </summary>
+        /// <param name="dateTime">The DateTime to assess.</param>
+        /// <returns>Returns the number of minutes remaining in the current hour of a DateTime as an integer.</returns>
         public int RemainingMinutesInHour(DateTime dateTime)
         {
             DateTime startDate = dateTime.AddHours(-1);
@@ -63,6 +64,12 @@ namespace CRMSLASystem
             return 0;
         }
 
+        /// <summary>
+        /// Gets a valid start date and time for a working day. A valid working date and time falls 
+        /// within working hours and must be on a working day (_isWorking = true).
+        /// </summary>
+        /// <param name="dateTime">The DateTime to assess and set to a valid start date if not already valid.</param>
+        /// <returns>Returns the next valid working start date as a nullable DateTime.</returns>
         public DateTime? GetValidStartDate(DateTime dateTime)
         {
             if (!_isWorking)
@@ -80,10 +87,18 @@ namespace CRMSLASystem
             return dateTime;
         }
 
+        /// <summary>
+        /// Gets the amount of hours and minutes required to be work for a given WorkingDay.
+        /// On weekends this is { 0, 0 } else e.g. for a day where start hour is 09:00am and finish
+        /// hour is 17:30pm, returns 8 hours and 30 minutes as { 8, 30 }.
+        /// </summary>
+        /// <returns>Returns an int[2], where int[0] is hours to work in a WorkingDay and int[1] is minutes
+        /// to work in a WorkingDay.</returns>
         public int[] GetWorkingTime()
         {
             int[] array = new int[2];
 
+            // If this isn't a working day, return 0 hours and 0 minutes.
             if (!_isWorking)
                 return new int[] { 0, 0 };
 
@@ -97,6 +112,12 @@ namespace CRMSLASystem
             return array;
         }
 
+        /// <summary>
+        /// A static array of WorkingDays where Saturday and Sunday are not considered working days.
+        /// </summary>
+        /// <param name="startHour">The hour work commences for a given WorkingDay as a double.</param>
+        /// <param name="endHour">The hour work finishes for a given WorkingDay as a double.</param>
+        /// <returns>Returns a static array of WorkingDays.</returns>
         public static WorkingDay[] StaticWorkingDays(double startHour, double endHour)
         {
             WorkingDay[] workingDays = new WorkingDay[7];
@@ -115,6 +136,26 @@ namespace CRMSLASystem
             }
 
             return workingDays;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dateTime"></param>
+        /// <returns></returns>
+        public DateTime GetStartDate(DateTime dateTime)
+        {
+            return dateTime.Date.AddHours(_businessStartHour).AddMinutes(_businessStartMinutes);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dateTime"></param>
+        /// <returns></returns>
+        public DateTime GetEndDate(DateTime dateTime)
+        {
+            return dateTime.Date.AddHours(_businessEndHour).AddMinutes(_businessEndMinutes);
         }
     }
 }

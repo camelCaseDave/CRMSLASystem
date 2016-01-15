@@ -1,12 +1,16 @@
-﻿using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Query;
-using Microsoft.Xrm.Sdk.Workflow;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Query;
+using Microsoft.Xrm.Sdk.Workflow;
+
 namespace CRMSLASystem
 {
+    /// <summary>
+    /// Abstraction of a CRM Business Closure.
+    /// </summary>
     public class CRMBusinessClosure
     {
         private IOrganizationService _service;
@@ -45,7 +49,7 @@ namespace CRMSLASystem
         /// </summary>
         /// <param name="startDate">The start date from which a CRM Business Closure is considered valid.</param>
         /// <param name="endDate">The end date before which a CRM Business Closure is considered valid.</param>
-        /// <returns>Returns an IList of CRM Business Closures valid within two DateTime boundaries..</returns>
+        /// <returns>Returns an IList of CRM Business Closures valid within two DateTime boundaries.</returns>
         public IList<Entity> GetBusinessClosureCalendarRules(DateTime startDate, DateTime endDate)
         {
             IList<Entity> businessClosures = GetBusinessClosureCalendarRules();
@@ -70,13 +74,15 @@ namespace CRMSLASystem
         }
 
         /// <summary>
-        /// Gets the time worked during a business day.
+        /// For a CRM Business closure, gets the time worked during working hours excluding time
+        /// invalidated by the Business Closure.
         /// </summary>
-        /// <param name="businessOpen">The </param>
-        /// <param name="businessClose"></param>
-        /// <param name="closureStart"></param>
-        /// <param name="closureEnd"></param>
-        /// <returns></returns>
+        /// <param name="businessOpen">The DateTime business opens.</param>
+        /// <param name="businessClose">The DateTime business closes.</param>
+        /// <param name="closureStart">When the CRM Business Closure begins as a DateTime.</param>
+        /// <param name="closureEnd">When the CRM Business Closure ends as a DateTime.</param>
+        /// <returns>Returns the amount of time that would have been worked in a CRM Business Closure as an int[3]
+        /// where int[ { days, hours, minutes}]. </returns>
         public static int[] GetTimeWorked(DateTime businessOpen, DateTime businessClose, DateTime closureStart, DateTime closureEnd)
         {
             if (businessOpen > closureEnd || businessClose < closureStart)

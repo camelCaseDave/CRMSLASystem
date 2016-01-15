@@ -1,15 +1,14 @@
-﻿using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Workflow;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Workflow;
 
 namespace CRMSLASystem
 {
     /// <summary>
     /// CRM Business Closure SLA System.
-    /// Authors: Richard Anderson and David Clark.
-    /// Version: 1.0.0.1
     /// </summary>
     public class BusinessTime
     {
@@ -26,6 +25,14 @@ namespace CRMSLASystem
 
         private WorkingDay[] _workingDays;
 
+        /// <summary>
+        /// BusinessTime constructor. An object to add business time to.
+        /// </summary>
+        /// <param name="startDate">Start date of time to add to as a DateTime.</param>
+        /// <param name="service">Workflow execution service as an IOrganizationService.</param>
+        /// <param name="context">Workflow execution context as an IWorkflowContext.</param>
+        /// <param name="businessStart">Business start hour e.g. 09.0d = 09:00am as a double.</param>
+        /// <param name="businessEnd">Business end hour e.g. 17.0d = 17:00pm as a double.</param>
         public BusinessTime(DateTime startDate, IOrganizationService service, IWorkflowContext context,
             double businessStart, double businessEnd)
         {
@@ -48,10 +55,6 @@ namespace CRMSLASystem
         /// hours and/or minutes added.</returns>
         public DateTime AddBusinessTime(int days, int hours, int minutes)
         {
-            // 1 = calculate working time - weekends
-            // 2 = calculate CRM Business Closure time during start -> end date.
-            // 3 = if above > 0, re-run AddBusinessTime()
-            //     else return endDate
             _minutes = minutes;
             _hours = hours;
             _days = days;
@@ -65,6 +68,7 @@ namespace CRMSLASystem
             processTime = (DateTime)validStartDateObjects["datetime"];
             currentDay = (WorkingDay)validStartDateObjects["currentday"];
 
+            // First, calculate working time subtracting weekends.
             while (_days > 0)
             {
                 int[] workingTime = currentDay.GetWorkingTime();
@@ -145,11 +149,15 @@ namespace CRMSLASystem
                     _minutes = _minutes - workedMinutes;
                 }
             }
+            
+            // Secondly, calculate total time consumed by CRM Business Closures between
+            // the start and end date.
 
             // Get CRM Business Closures.
             CRMBusinessClosure closureModel = new CRMBusinessClosure(_service, _context);
             IList<Entity> businessClosures = closureModel.GetBusinessClosureCalendarRules(_startDate, processTime);
 
+            // totalTime array[] { days, hours, minutes}
             int[] totalTime = new int[3] { 0, 0, 0 };
 
             // Append potential worked time during a business closure to total time array to be added
@@ -162,11 +170,13 @@ namespace CRMSLASystem
                 totalTime[2] += i[2];
             }
 
+            // Finally, if we've no totalTime still to add, return the calculated end date.
             if (totalTime[0] == 0 && totalTime[1] == 0 && totalTime[2] == 0)
                 return processTime;
 
             _startDate = processTime;
-
+            
+            // Else, re run AddBusinessTime passing in the outstanding time yet to be added.
             return AddBusinessTime(totalTime[0], totalTime[1], totalTime[2]);
         }
 
