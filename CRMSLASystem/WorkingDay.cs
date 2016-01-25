@@ -139,20 +139,20 @@ namespace CRMSLASystem
         }
 
         /// <summary>
-        /// 
+        /// Gets the start date and time for a given DateTime by considering business open hours.
         /// </summary>
-        /// <param name="dateTime"></param>
-        /// <returns></returns>
+        /// <param name="dateTime">The DateTime to assess.</param>
+        /// <returns>Returns the start date and time having applied business opening hours as a DateTime.</returns>
         public DateTime GetStartDate(DateTime dateTime)
         {
             return dateTime.Date.AddHours(_businessStartHour).AddMinutes(_businessStartMinutes);
         }
 
         /// <summary>
-        /// 
+        /// Gets the end date and time for a given DateTime by considering the time of day business ends.
         /// </summary>
         /// <param name="dateTime"></param>
-        /// <returns></returns>
+        /// <returns>Returns the end date and time having applied business close hours as a DateTime.</returns>
         public DateTime GetEndDate(DateTime dateTime)
         {
             return dateTime.Date.AddHours(_businessEndHour).AddMinutes(_businessEndMinutes);

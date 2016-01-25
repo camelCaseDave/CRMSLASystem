@@ -16,6 +16,11 @@ namespace CRMSLASystem
         private IOrganizationService _service;
         private IWorkflowContext _context;
 
+        /// <summary>
+        /// Main constructor for CRMBusinessClosure.
+        /// </summary>
+        /// <param name="service">Workflow execution service as an IOrganizationService..</param>
+        /// <param name="context">Workflow execution context as an IWorkflowContext.</param>
         public CRMBusinessClosure(IOrganizationService service, IWorkflowContext context)
         {
             _service = service;
